@@ -22,8 +22,7 @@ class Merchants extends ABase
 		$condition = array('token' => $token);
 		return self::getInfo($condition);
 	}
-	
-	
+		
 
 	static public function setData($name, $value)
 	{
