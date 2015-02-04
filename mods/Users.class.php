@@ -13,6 +13,7 @@ class Users extends ABase
 	
 	static public function getInfo($merch_id, $open_id)
 	{
+		if(!$merch_id || !$open_id) return false;
 		$condition = array('merch_id' => $merch_id, 'open_id' => $open_id);
 		return self::getData($condition);
 	}
@@ -21,12 +22,17 @@ class Users extends ABase
 	static public function setData($data)
 	{
 		//DB::Debug();
-		return self::insert($data);
-	}
-	
-	static public function updateAttention($merch_id, $open_id, $value)
-	{
-		return self::update(array('merch_id' => $merch_id, 'open_id' => $open_id), array('is_attention'=>$value));
+		$merch_id = isset($data['merch_id']) ? $data['merch_id'] : 0;
+		$open_id = isset($data['open_id']) ? $data['open_id'] : 0;
+		if(!$merch_id || !$open_id) return false;
+		
+		if(!$info = self::getInfo($merch_id, $open_id)){
+			return self::insert($data);
+		}else{
+			unset($data['merch_id'], $data['open_id'], $data['create_at']);
+			self::update(array('merch_id' => $merch_id, 'open_id' => $open_id), $data); 
+			return $info['id'];
+		}
 	}
 	
 }

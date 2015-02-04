@@ -24,6 +24,8 @@ class Wechat
 	static public $createtime = null;
 	static public $msgtype = null;
 	
+	static public $wxuserinfourl = "https://api.weixin.qq.com/cgi-bin/user/info?access_token=#ACCESS_TOKEN#&openid=#OPENID#&lang=zh_CN";
+	
 	static private function _init()
 	{
 		if(!self::$_signature) self::$_signature = isset($_REQUEST["signature"]) ? $_REQUEST["signature"] : null;
@@ -143,20 +145,36 @@ class Wechat
 	{
 		switch ($type){
 			case 'image':
-				
-				break;
+				$media_id = isset($data['media_id']) ? $data['media_id'] : '';
+				return "<Image><MediaId><![CDATA[$media_id]]></MediaId></Image>";
 			case 'voice':
-				
-				break;
+				$media_id = isset($data['media_id']) ? $data['media_id'] : '';
+				return "<Voice><MediaId><![CDATA[$media_id]]></MediaId></Voice>";
 			case 'video':
-				
-				break;
+				$media_id = isset($data['media_id']) ? $data['media_id'] : '';
+				$title = isset($data['title']) ? $data['title'] : '';
+				$description = isset($data['description']) ? $data['description'] : '';
+				return "<Video><MediaId><![CDATA[$media_id]]></MediaId><Title><![CDATA[$title]]></Title><Description><![CDATA[$description]]></Description></Video> ";
 			case 'music':
-				
-				break;
+				$media_id = isset($data['media_id']) ? $data['media_id'] : '';
+				$title = isset($data['title']) ? $data['title'] : '';
+				$description = isset($data['description']) ? $data['description'] : '';
+				$music_url = isset($data['music_url']) ? $data['music_url'] : '';
+				$hq_music_url = isset($data['hq_music_url']) ? $data['hq_music_url'] : '';
+				return "<Music><Title><![CDATA[$title]]></Title><Description><![CDATA[$description]]></Description><MusicUrl><![CDATA[$music_url]]></MusicUrl><HQMusicUrl><![CDATA[$hq_music_url]]></HQMusicUrl><ThumbMediaId><![CDATA[$media_id]]></ThumbMediaId></Music>";
 			case 'news':
-				
-				break;
+				$count = isset($data['count']) ? $data['count'] : 0;
+				$xml = "<Articles>";
+				$items = isset($data['items']) ? $data['items'] : array();
+				foreach ($items as $item){
+					$title = isset($item['title']) ? $item['title'] : '';
+					$description = isset($item['description']) ? $item['description'] : '';
+					$picurl = isset($item['picurl']) ? $item['picurl'] : '';
+					$url = isset($item['url']) ? $item['url'] : '';
+					$xml = $xml."<item><Title><![CDATA[$title]]></Title><Description><![CDATA[$description]]></Description><PicUrl><![CDATA[$picurl]]></PicUrl><Url><![CDATA[$url]]></Url></item>";
+				}
+				$xml = $xml."</Articles>";
+				return $xml;
 			case 'text':
 			default:
 				$content = isset($data['content']) ? $data['content'] : '';
@@ -244,41 +262,73 @@ class Wechat
 		);
 		$id = Chats::setData($data);
 		
+		//处理逻辑，回复对应的信息类型和内容。
+		
 		self::postMsg('text', array('content'=>'欢迎光临！'));
+		//self::postMsg('image', array("media_id"=>"6G1UZfrneUZkcF8umKf6CfeLeprVufn8GMTNkF_aqjRzkrDdw76kzE1BnOP1VBaE"));
+		//self::postMsg('voice', array("media_id"=>"tJjTL415AFRpC8oo5z8pdEJ9cvc4YGwxneJPSWphgASG5yNqNkSCrZIEz5toOvBp"));
+		//self::postMsg('video', array("media_id"=>"", "title"=>"", 'description'=>""));
+		//self::postMsg('music', array("media_id"=>"", "title"=>"", 'description'=>"", "music_url"=>"", "hq_music_url"=>""));
+		/*
+		 self::postMsg('news', array("count"=>0, "items"=>array(
+			array("title"=>"","description"=>"","picurl"=>"","url"=>""),
+			array("title"=>"","description"=>"","picurl"=>"","url"=>""),
+		)));
+		*/
 	}
 	
-	static public function attention($type='subscribe/unsubscribe', $msg)
+	static public function attention($type='subscribe', $msg)
 	{		
 		if(self::$touser != self::$_original_id) return false;
-		$open_id = self::$fromuser;
-		
-		$user = Users::getInfo(self::$_merch_id, $open_id);
-		self::$_user_id = isset($user['id']) ? $user['id'] : 0;
-		
-		if('subscribe'== $type){
-			if(!self::$_user_id){
-				$data = array(
-					'merch_id'		=> self::$_merch_id,
-					'open_id'		=> $open_id,
-					'is_attention'	=> 1,
-					'create_at'		=> self::$createtime,
-				);
-				self::$_user_id = Users::setData($data);
-			}else{
-				Users::updateAttention(self::$_merch_id, $open_id, 1);
-			}
-		}else{
-			Users::updateAttention(self::$_merch_id, $open_id, 0);
-		}
+		self::$_user_id = self::getUserInfo(self::$fromuser);
+		if(!self::$_user_id) return false;
 		
 		$data = array(
-				'merch_id'		=> self::$_merch_id,
-				'user_id'		=> self::$_user_id,
-				'create_at'		=> self::$createtime,
-				'name'			=> $type,
-				'tofrom'		=> 0
+			'merch_id'		=> self::$_merch_id,
+			'user_id'		=> self::$_user_id,
+			'create_at'		=> self::$createtime,
+			'name'			=> $type,
+			'tofrom'		=> 0
 		);
 		return Events::setData($data);
+	}
+	
+	static public function getUserInfo($open_id)
+	{
+		$url = self::$wxuserinfourl;
+		$url = str_replace("#ACCESS_TOKEN#", self::$_token, $url);
+		$url = str_replace("#OPENID#", $open_id, $url);
+		$info = file_get_contents($url);
+		
+		error_log(serialize($info)."\n\n", 3, "c:\\ison.log");
+		$info = json_decode($info, true);
+		
+		$data = array(
+			'merch_id'		=> self::$_merch_id,
+			'open_id'		=> $open_id,
+			'create_at'		=> self::$createtime,
+			'update_at'		=>time()
+		);
+		$subscribe = isset($info['subscribe']) ? $info['subscribe'] : -1;
+		if(-1 == $subscribe) return 0;
+		
+		if(0 == $subscribe){
+			$data['is_attention'] = 0;
+		}else if(1 == $subscribe){
+			$data['is_attention'] = 1;
+			$data['nickname'] = $info['nickname'];
+			$data['sex'] = $info['sex'];
+			$data['language'] = $info['language'];
+			$data['city'] = $info['city'];
+			$data['province'] = $info['province'];
+			$data['country'] = $info['country'];
+			$data['headimgurl'] = $info['headimgurl'];
+			$data['subscribe_time'] = $info['subscribe_time'];
+			$data['unionid'] = $info['unionid'];
+			
+		}
+		self::$_user_id = Users::setData($data);
+		return self::$_user_id;
 	}
 	
 }
