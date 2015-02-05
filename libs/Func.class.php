@@ -221,7 +221,8 @@ class Func
 	static function curlPost($url,array $data)
 	{
 		if(!$url || !$data) return false;
-	
+		$ssl = substr($url, 0, 8) == "https://" ? TRUE : FALSE;
+		
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $url);
 		curl_setopt($ch, CURLOPT_POST,true);
@@ -229,6 +230,12 @@ class Func
 		curl_setopt($ch, CURLOPT_HTTPHEADER, true);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($ch,CURLOPT_TIMEOUT,5);
+		
+		if ($ssl){
+			curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 1);
+			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+		}
+		
 		$content = curl_exec($ch);
 		curl_close($ch);
 	
@@ -238,13 +245,20 @@ class Func
 	static function curlGet($url)
 	{
 		if(!$url) return false;
-		$header[] = "Content-type: text/xml";
+		$ssl = substr($url, 0, 8) == "https://" ? TRUE : FALSE;
+		
+		//$header[] = "Content-type: text/xml";
+		$header[] = false;
 		
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $url);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
 		curl_setopt($ch,CURLOPT_TIMEOUT,5);
+		if ($ssl){
+			curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 1);
+			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE);
+		}
 		$content = curl_exec($ch);
 		curl_close($ch);
 	

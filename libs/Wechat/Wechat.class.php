@@ -5,11 +5,14 @@ class Wechat
 	static private $_merch_id = 0;
 	static private $_app_id = null;
 	static private $_token = null;
+	static private $_is_encrypt = 0;
 	static private $_username = null;
 	static private $_original_id = null;
 	static private $_name = null;
 	static private $_app_secret = null;
 	static private $_encodingAesKey = null;
+	static private $_access_token = null;
+	static private $_web_access_token = null;
 	
 	static private $_signature = null;
 	static private $_timestamp = null;
@@ -24,8 +27,9 @@ class Wechat
 	static public $createtime = null;
 	static public $msgtype = null;
 	
+	static public $accesstokenurl = "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=#APPID#&secret=#APPSECRET#";
 	static public $wxuserinfourl = "https://api.weixin.qq.com/cgi-bin/user/info?access_token=#ACCESS_TOKEN#&openid=#OPENID#&lang=zh_CN";
-	
+		
 	static private function _init()
 	{
 		if(!self::$_signature) self::$_signature = isset($_REQUEST["signature"]) ? $_REQUEST["signature"] : null;
@@ -39,6 +43,7 @@ class Wechat
 		if(!self::$_Merch) self::$_Merch = Merchants::getInfoByToken(self::$_token);
 		self::$_merch_id = isset(self::$_Merch['id']) ? self::$_Merch['id'] : 0;
 		self::$_app_id = isset(self::$_Merch['app_id']) ? self::$_Merch['app_id'] : null;
+		self::$_is_encrypt = isset(self::$_Merch['is_encrypt']) ? self::$_Merch['is_encrypt'] : 0;
 		self::$_username = isset(self::$_Merch['username']) ? self::$_Merch['username'] : null;
 		self::$_original_id = isset(self::$_Merch['original_id']) ? self::$_Merch['original_id'] : null;
 		self::$_name = isset(self::$_Merch['name']) ? self::$_Merch['name'] : null;
@@ -59,6 +64,35 @@ class Wechat
 		$wxtoken = explode("?", $wxtoken);
 		$wxtoken = isset($wxtoken[0]) ? $wxtoken[0] : null;
 		return $wxtoken;
+	}
+	
+	//-- 获取普通access_token {"access_token":"BD58...","expires_in":7200}，在调用前先检查是否已经过期。
+	static private function _getAccessToken()
+	{
+		self::$_access_token = isset(self::$_Merch['access_token']) ? self::$_Merch['access_token'] : null;
+		$access_token_expires = isset(self::$_Merch['access_token_expires']) ? (int)self::$_Merch['access_token_expires'] : 0;
+		
+		if(!self::$_access_token || $access_token_expires < time()){
+			$url = self::$accesstokenurl;
+			$url = str_replace("#APPID#", self::$_app_id, $url);
+			$url = str_replace("#APPSECRET#", self::$_app_secret, $url);
+			$info = Func::curlGet($url);
+			ABase::log("access token url: ".$url, "access_token", "Info");
+			ABase::log("access token info: ".$info, "access_token", "Info");
+			
+			$info = json_decode($info, true);
+			$access_token = isset($info['access_token']) ? $info['access_token'] : null;
+			$expires_in = isset($info['expires_in']) ? $info['expires_in'] : null;
+			if(!$access_token) return false;
+			
+			$condition = array('id' => self::$_merch_id);
+			$data = array("access_token"=>$access_token, "access_token_expires"=>(time()+$expires_in));
+			Merchants::update($condition, $data);
+			self::$_access_token = $access_token;
+		}
+
+		//self::$_web_access_token = isset(self::$_Merch['web_access_token']) ? self::$_Merch['web_access_token'] : null;
+		//$web_access_token_expires = isset(self::$_Merch['web_access_token_expires']) ? self::$_Merch['web_access_token_expires'] : 0;
 	}
 	
 	static private function _valid()
@@ -90,6 +124,7 @@ class Wechat
 		//$from_xml = isset($GLOBALS["HTTP_RAW_POST_DATA"]) ? $GLOBALS["HTTP_RAW_POST_DATA"] : null;
 		$from_xml = isset($GLOBALS["HTTP_RAW_POST_DATA"]) ? $GLOBALS["HTTP_RAW_POST_DATA"] : ($from_xml = isset($_POST["postxml"]) ? $_POST["postxml"] : null);
 		if(!$from_xml) return false;
+		if(!self::$_is_encrypt) return $from_xml;
 		
 		/* //原始格式
 		$xml_tree = new DOMDocument();
@@ -118,14 +153,17 @@ class Wechat
 		$createtime = time();
 		$msg = self::postMsgType($type, $data);
 		$text = "<xml><ToUserName><![CDATA[$touserName]]></ToUserName><FromUserName><![CDATA[$fromuserName]]></FromUserName><CreateTime>$createtime</CreateTime><MsgType><![CDATA[$type]]></MsgType>$msg</xml>";
-			
-		$pc = new WXBizMsgCrypt(self::$_token, self::$_encodingAesKey, self::$_app_id);
-		$encryptMsg = '';
-		$errCode = $pc->encryptMsg($text, self::$_timestamp, self::$_nonce, $encryptMsg);
-
-		if (0 != $errCode){
-			ABase::log($errCode);
-			exit('');
+		
+		if(self::$_is_encrypt){
+			$pc = new WXBizMsgCrypt(self::$_token, self::$_encodingAesKey, self::$_app_id);
+			$encryptMsg = '';
+			$errCode = $pc->encryptMsg($text, self::$_timestamp, self::$_nonce, $encryptMsg);
+			if (0 != $errCode){
+				ABase::log($errCode);
+				exit('');
+			}
+		}else{
+			$encryptMsg = $text;
 		}
 		
 		$data = array(
@@ -280,7 +318,7 @@ class Wechat
 	static public function attention($type='subscribe', $msg)
 	{		
 		if(self::$touser != self::$_original_id) return false;
-		self::$_user_id = self::getUserInfo(self::$fromuser);
+		self::$_user_id = self::getUserInfo(self::$fromuser, $type);
 		if(!self::$_user_id) return false;
 		
 		$data = array(
@@ -293,15 +331,25 @@ class Wechat
 		return Events::setData($data);
 	}
 	
-	static public function getUserInfo($open_id)
+	static public function getUserInfo($open_id, $type='subscribe')
 	{
-		$url = self::$wxuserinfourl;
-		$url = str_replace("#ACCESS_TOKEN#", self::$_token, $url);
-		$url = str_replace("#OPENID#", $open_id, $url);
-		$info = file_get_contents($url);
-		
-		error_log(serialize($info)."\n\n", 3, "c:\\ison.log");
-		$info = json_decode($info, true);
+		$subscribe = 0;
+		$info = array();
+		if('subscribe' == $type){
+			self::_getAccessToken();
+			if(!self::$_access_token) return 0;
+			
+			$url = self::$wxuserinfourl;
+			$url = str_replace("#ACCESS_TOKEN#", self::$_access_token, $url);
+			$url = str_replace("#OPENID#", $open_id, $url);
+			$info = Func::curlGet($url);
+			ABase::log("user info url: ".$url, "access_token", "Info");
+			ABase::log("user info: ".$info, "access_token", "Info");
+			
+			$info = json_decode($info, true);
+			$subscribe = isset($info['subscribe']) ? $info['subscribe'] : -1;
+			if(-1 == $subscribe) return 0;
+		}
 		
 		$data = array(
 			'merch_id'		=> self::$_merch_id,
@@ -309,23 +357,22 @@ class Wechat
 			'create_at'		=> self::$createtime,
 			'update_at'		=>time()
 		);
-		$subscribe = isset($info['subscribe']) ? $info['subscribe'] : -1;
-		if(-1 == $subscribe) return 0;
 		
 		if(0 == $subscribe){
 			$data['is_attention'] = 0;
 		}else if(1 == $subscribe){
-			$data['is_attention'] = 1;
-			$data['nickname'] = $info['nickname'];
-			$data['sex'] = $info['sex'];
-			$data['language'] = $info['language'];
-			$data['city'] = $info['city'];
-			$data['province'] = $info['province'];
-			$data['country'] = $info['country'];
-			$data['headimgurl'] = $info['headimgurl'];
-			$data['subscribe_time'] = $info['subscribe_time'];
-			$data['unionid'] = $info['unionid'];
+			if(!isset($info['subscribe_time'])) return 0;
 			
+			$data['is_attention'] = 1;
+			$data['nickname'] = isset($info['nickname']) ? $info['nickname'] : null;
+			$data['sex'] = isset($info['sex']) ? $info['sex'] : null;
+			$data['language'] = isset($info['language']) ? $info['language'] : null;
+			$data['city'] = isset($info['city']) ? $info['city'] : null;
+			$data['province'] = isset($info['province']) ? $info['province'] : null;
+			$data['country'] = isset($info['country']) ? $info['country'] : null;
+			$data['headimgurl'] = isset($info['headimgurl']) ? $info['headimgurl'] : null;
+			$data['subscribe_time'] = isset($info['subscribe_time']) ? $info['subscribe_time'] : null;
+			$data['unionid'] = isset($info['unionid']) ? $info['unionid'] : null;
 		}
 		self::$_user_id = Users::setData($data);
 		return self::$_user_id;

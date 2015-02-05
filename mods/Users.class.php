@@ -30,6 +30,10 @@ class Users extends ABase
 			return self::insert($data);
 		}else{
 			unset($data['merch_id'], $data['open_id'], $data['create_at']);
+			foreach ($data as $k=>$v){
+				if(0 == $v) continue;
+				if(!$v) unset($data[$k]);
+			}
 			self::update(array('merch_id' => $merch_id, 'open_id' => $open_id), $data); 
 			return $info['id'];
 		}
