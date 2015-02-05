@@ -10,7 +10,7 @@ Target Server Type    : MYSQL
 Target Server Version : 50524
 File Encoding         : 65001
 
-Date: 2015-02-04 18:35:52
+Date: 2015-02-05 16:41:29
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -33,7 +33,7 @@ CREATE TABLE `wx_chats` (
   KEY `msg_type` (`msg_type`),
   CONSTRAINT `chats_merch_id` FOREIGN KEY (`merch_id`) REFERENCES `wx_merchants` (`id`) ON DELETE NO ACTION ON UPDATE CASCADE,
   CONSTRAINT `chats_user_id` FOREIGN KEY (`user_id`) REFERENCES `wx_users` (`id`) ON DELETE NO ACTION ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=43 DEFAULT CHARSET=utf8mb4;
 
 -- ----------------------------
 -- Records of wx_chats
@@ -68,6 +68,10 @@ INSERT INTO `wx_chats` VALUES ('27', '1', '5', '1423032849', 'location', '{\"Loc
 INSERT INTO `wx_chats` VALUES ('28', '1', '5', '1423032697', 'voice', '{\"media_id\":\"tJjTL415AFRpC8oo5z8pdEJ9cvc4YGwxneJPSWphgASG5yNqNkSCrZIEz5toOvBp\"}', '1');
 INSERT INTO `wx_chats` VALUES ('29', '1', '4', '1423033518', 'link', '{\"Title\":\"\\u4e00\\u8d77\\u6765DIY\\u6709\\u673a\\u9ed1\\u571f\\u7cd9\\u7c73\\u6cb9\\uff01\",\"Description\":\"\\u5e15\\u65af\\u5a77\\u6709\\u673a\\u9ed1\\u571f\\u7cd9\\u7c73\\u5177\\u6709\\u51cf\\u80a5\\u529f\\u80fd\\uff0c\\u6e05\\u80a0\\u80c3\\uff0c\\u5bf9\\u80c3\\u80a0\\u529f\\u80fd\\u969c\\u788d\\u7684\\u60a3\\u8005\\u6709\\u5f88\\u597d\\u7684\\u7597\\u6548\\uff0c\\u53ef\\u6cbb\\u7597\\u4fbf\\u79d8\\uff0c\\u52a0\\u901f\\u6709\\u5bb3\\u7269\\u8d28\\u4ee3\\u8c22\\uff1b\\u80fd\\u6cbb\\u7597\\u8d2b\\u8840\\uff0c\\u80fd\\u4fc3\\u8fdb\\u8840\\u6db2\\u5faa\\u73af\\uff0c\\u6709\\u5f3a\\u5316\\u4f53\\u8d28\\u7684\\u4f5c\\u7528 \\u3002\\u5e76\\u4e14\\u8fd8\\u53ef\\u51cf\\u5c11\\u7cd6\\u5c3f\\u75c5\\u53d1\\u75c5\\u98ce\\u9669\\u548c\\u6709\\u9884\\u9632\\u591a\\u79cd\\u75be\\u75c5\\u7684\\u529f\\u80fd\\u3002\",\"Url\":\"http:\\/\\/mp.weixin.qq.com\\/s?__biz=MzA4MzM3NzYwOA==&mid=202121571&idx=1&sn=f5fd1bc2aec686ebbab09a69ea0717cc#rd\",\"MsgId\":\"6111882421126069705\"}', '0');
 INSERT INTO `wx_chats` VALUES ('30', '1', '4', '1423033366', 'voice', '{\"media_id\":\"tJjTL415AFRpC8oo5z8pdEJ9cvc4YGwxneJPSWphgASG5yNqNkSCrZIEz5toOvBp\"}', '1');
+INSERT INTO `wx_chats` VALUES ('39', '1', '7', '1423124270', 'text', '{\"Content\":\"\\/::<\",\"MsgId\":\"6112272198001730051\"}', '0');
+INSERT INTO `wx_chats` VALUES ('40', '1', '7', '1423124118', 'text', '{\"content\":\"\\u6b22\\u8fce\\u5149\\u4e34\\uff01\"}', '1');
+INSERT INTO `wx_chats` VALUES ('41', '1', '7', '1423124295', 'text', '{\"Content\":\"\\/::Z\",\"MsgId\":\"6112272305375912457\"}', '0');
+INSERT INTO `wx_chats` VALUES ('42', '1', '7', '1423124142', 'text', '{\"content\":\"\\u6b22\\u8fce\\u5149\\u4e34\\uff01\"}', '1');
 
 -- ----------------------------
 -- Table structure for wx_events
@@ -86,7 +90,7 @@ CREATE TABLE `wx_events` (
   KEY `chats_user_id` (`user_id`),
   CONSTRAINT `wx_events_ibfk_1` FOREIGN KEY (`merch_id`) REFERENCES `wx_merchants` (`id`) ON DELETE NO ACTION ON UPDATE CASCADE,
   CONSTRAINT `wx_events_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `wx_users` (`id`) ON DELETE NO ACTION ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=utf8mb4;
 
 -- ----------------------------
 -- Records of wx_events
@@ -95,6 +99,24 @@ INSERT INTO `wx_events` VALUES ('1', '1', '4', '1422948091', 'subscribe', null, 
 INSERT INTO `wx_events` VALUES ('2', '1', '4', '1422951295', 'unsubscribe', null, '0');
 INSERT INTO `wx_events` VALUES ('3', '1', '5', '1423032438', 'subscribe', null, '0');
 INSERT INTO `wx_events` VALUES ('5', '1', '4', '1423046024', 'subscribe', null, '0');
+INSERT INTO `wx_events` VALUES ('6', '1', '4', '1423105244', 'unsubscribe', null, '0');
+INSERT INTO `wx_events` VALUES ('7', '1', '4', '1423105488', 'unsubscribe', null, '0');
+INSERT INTO `wx_events` VALUES ('8', '1', '4', '1423112991', 'unsubscribe', null, '0');
+INSERT INTO `wx_events` VALUES ('9', '1', '4', '1423113052', 'subscribe', null, '0');
+INSERT INTO `wx_events` VALUES ('10', '1', '4', '1423113052', 'subscribe', null, '0');
+INSERT INTO `wx_events` VALUES ('11', '1', '4', '1423113339', 'unsubscribe', null, '0');
+INSERT INTO `wx_events` VALUES ('12', '1', '4', '1423113375', 'subscribe', null, '0');
+INSERT INTO `wx_events` VALUES ('13', '1', '4', '1423114825', 'unsubscribe', null, '0');
+INSERT INTO `wx_events` VALUES ('14', '1', '4', '1423114956', 'subscribe', null, '0');
+INSERT INTO `wx_events` VALUES ('15', '1', '4', '1423116239', 'unsubscribe', null, '0');
+INSERT INTO `wx_events` VALUES ('16', '1', '4', '1423116606', 'subscribe', null, '0');
+INSERT INTO `wx_events` VALUES ('17', '1', '5', '1423116724', 'unsubscribe', null, '0');
+INSERT INTO `wx_events` VALUES ('18', '1', '5', '1423116768', 'subscribe', null, '0');
+INSERT INTO `wx_events` VALUES ('19', '1', '4', '1423116837', 'unsubscribe', null, '0');
+INSERT INTO `wx_events` VALUES ('20', '1', '4', '1423116960', 'subscribe', null, '0');
+INSERT INTO `wx_events` VALUES ('21', '1', '5', '1423117055', 'unsubscribe', null, '0');
+INSERT INTO `wx_events` VALUES ('24', '1', '7', '1423124220', 'unsubscribe', null, '0');
+INSERT INTO `wx_events` VALUES ('25', '1', '7', '1423124252', 'subscribe', null, '0');
 
 -- ----------------------------
 -- Table structure for wx_merchants
@@ -104,12 +126,17 @@ CREATE TABLE `wx_merchants` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `app_id` char(18) NOT NULL COMMENT 'AppID',
   `token` varchar(32) NOT NULL,
+  `is_encrypt` tinyint(3) NOT NULL DEFAULT '0' COMMENT '微信后台是否选择了加密,0否，1是',
   `username` varchar(50) DEFAULT NULL,
   `original_id` varchar(30) DEFAULT NULL,
   `name` varchar(50) DEFAULT NULL COMMENT '商户名',
   `app_secret` varchar(40) DEFAULT NULL,
   `encodingAesKey` varchar(45) DEFAULT NULL COMMENT 'EncodingAESKey',
   `is_access` char(1) NOT NULL DEFAULT 'N' COMMENT '是否通过接口认证',
+  `access_token` varchar(600) DEFAULT NULL COMMENT '普通access_token',
+  `access_token_expires` int(11) unsigned DEFAULT '0',
+  `web_access_token` varchar(600) DEFAULT NULL COMMENT '网页授权access_token',
+  `web_access_token_expires` int(11) unsigned DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `app_id` (`app_id`),
   UNIQUE KEY `token` (`token`) USING BTREE
@@ -118,7 +145,7 @@ CREATE TABLE `wx_merchants` (
 -- ----------------------------
 -- Records of wx_merchants
 -- ----------------------------
-INSERT INTO `wx_merchants` VALUES ('1', 'wx407042c1130cd24e', 'placentinxft6tnoJk', 'PlacentinSwiss', 'gh_22325e8ce9b8', '广州帕斯婷商贸有限公司订阅号', 'ff10308f4c4b0c0892be8418569d3165', 'xft6tnoJkkA5W2Yum8nx3Hiyf2sBmCGpFSXXifbtFr3', 'Y');
+INSERT INTO `wx_merchants` VALUES ('1', 'wxd4aa173e5b4dea11', 'placentinxft6tnoJks', '0', 'PlacentinSwiss', 'gh_9b971d34bb4b', '广州帕斯婷商贸有限公司订阅号', '8d8f440a9d5edf54c872d46222d6acc5', 'xft6tnoJkkA5W2Yum8nx3Hiyf2sBmCGpFSXXifbtFr3', 'Y', 'QBqy2d3ZKEKROaCAmsk_w3NnsNdx73i-EUscwfDWw2JmFq5EO_LhQJrE058cKcF1mvWrkFVAMbMb7XUrqI0giwUM-VvApDHOxn_6qTaZSYE', '1423131155', null, null);
 
 -- ----------------------------
 -- Table structure for wx_setting
@@ -174,10 +201,11 @@ CREATE TABLE `wx_users` (
   KEY `users_merch_id` (`merch_id`),
   KEY `is_attention` (`is_attention`),
   CONSTRAINT `users_merch_id` FOREIGN KEY (`merch_id`) REFERENCES `wx_merchants` (`id`) ON DELETE NO ACTION ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4;
 
 -- ----------------------------
 -- Records of wx_users
 -- ----------------------------
-INSERT INTO `wx_users` VALUES ('4', '1', 'oGKeLjnWHJV5BLGqov66syOM8bx4', null, null, null, null, null, null, null, null, null, null, '0', null, null, '1423045871', '1422948091');
-INSERT INTO `wx_users` VALUES ('5', '1', 'oGKeLjuU-Ug4b1F-TT22rzyZmnqI', null, null, null, null, null, null, null, null, null, null, '1', null, null, null, '1423032438');
+INSERT INTO `wx_users` VALUES ('4', '1', 'oGKeLjnWHJV5BLGqov66syOM8bx4', '☆易熟人生☆', '1', '中国', '广东', '广州', null, null, null, 'zh_CN', 'http://wx.qlogo.cn/mmopen/LLprAoicSMPcAk99T3ngKtjZ2hZBvBB0uA6QCB2TH34yXiaHRU5JIysYvO091yPNobnsks5nFwPfDrKXjLtuBAe1OEDqsRNPf7/0', '1', '1423116960', null, '1423116807', '1422948091');
+INSERT INTO `wx_users` VALUES ('5', '1', 'oGKeLjuU-Ug4b1F-TT22rzyZmnqI', '颜平平', '1', '中国', '广东', '广州', null, null, null, 'zh_CN', 'http://wx.qlogo.cn/mmopen/dnla6gzzaYBOhQeIGjahODp3BKEhDZk5HsSNMnL0m53JziclzHODG8uywLzfPeRQOZiaPdSfnFayHZbu7icyCjcicia2HZ5g73XNL/0', '0', '1423116768', null, '1423116902', '1423032438');
+INSERT INTO `wx_users` VALUES ('7', '1', 'oFL7jsp5Nr-GVAsasZsuxEe1Jp_Y', '☆易熟人生☆', '1', '中国', '广东', '广州', null, null, null, 'zh_CN', 'http://wx.qlogo.cn/mmopen/y9ddALBhjgCW5peBhzSmH29ANV0uQ7Qwk04crDHt5In0BBVYeSPbG4pb80aX6xK0eJRHDX205fleMrtcdA4KoogY7otqibnW3/0', '1', '1423124252', null, '1423124099', '1423124220');
