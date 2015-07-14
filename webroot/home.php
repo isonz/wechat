@@ -1,2 +1,3 @@
 <?php
-header("Location: http://ptp.cn");
+//header("Location: http://ptp.cn");
+echo "wechat";
